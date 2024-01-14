@@ -20,7 +20,7 @@ package org.tikv.common.log;
 import java.util.Map;
 
 public class SlowLogEmptyImpl implements SlowLog {
-  public static final SlowLogEmptyImpl INSTANCE = new SlowLogEmptyImpl();
+  public static SlowLog INSTANCE = new SlowLogEmptyImpl();
 
   private SlowLogEmptyImpl() {}
 

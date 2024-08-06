@@ -172,6 +172,8 @@ public class TiRegion implements Serializable {
     return getContext(currentPeer, java.util.Collections.emptySet(), false);
   }
 
+  static int DEFAULT_EXECUTION_TIME_MS = 700;
+
   private Kvrpcpb.Context getContext(
       Peer currentPeer, Set<Long> resolvedLocks, boolean replicaRead) {
 
@@ -183,7 +185,9 @@ public class TiRegion implements Serializable {
         .setRegionId(meta.getId())
         .setPeer(currentPeer)
         .setReplicaRead(replicaRead)
-        .setRegionEpoch(this.meta.getRegionEpoch());
+        .setRegionEpoch(this.meta.getRegionEpoch())
+        .setMaxExecutionDurationMs(DEFAULT_EXECUTION_TIME_MS);
+    ;
     builder.addAllResolvedLocks(resolvedLocks);
     return builder.build();
   }

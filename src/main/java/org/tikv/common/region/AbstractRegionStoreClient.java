@@ -97,6 +97,10 @@ public abstract class AbstractRegionStoreClient
     return region;
   }
 
+  public TiStore getStore() {
+    return store;
+  }
+
   @Override
   protected TikvGrpc.TikvBlockingStub getBlockingStub() {
     return blockingStub.withDeadlineAfter(getTimeout(), TimeUnit.MILLISECONDS);

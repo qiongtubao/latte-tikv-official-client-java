@@ -43,6 +43,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import latte.monitor.SlowLogDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.tikv.common.TiConfiguration;
@@ -127,7 +128,9 @@ public class RawKVClient implements RawKVClientBase {
   }
 
   private SlowLog withClusterInfo(SlowLog logger) {
-    return logger.withField("cluster_id", clusterId).withField("pd_addresses", pdAddresses);
+    return SlowLogDelegate.create(logger, tiSession)
+        .withField("cluster_id", clusterId)
+        .withField("pd_addresses", pdAddresses);
   }
 
   private String[] withClusterId(String label) {
@@ -157,6 +160,11 @@ public class RawKVClient implements RawKVClientBase {
       while (true) {
         try (RegionStoreClient client = clientBuilder.build(key, backOffer)) {
           span.addProperty("region", client.getRegion().toString());
+          span.addProperty(
+              "address",
+              client.getStore().getProxyStore() != null
+                  ? "proxy." + client.getStore().getProxyStore().getAddress()
+                  : client.getStore().getAddress());
           client.rawPut(backOffer, key, value, ttl, atomicForCAS);
           RAW_REQUEST_SUCCESS.labels(labels).inc();
           return;
@@ -285,6 +293,11 @@ public class RawKVClient implements RawKVClientBase {
       while (true) {
         try (RegionStoreClient client = clientBuilder.build(key, backOffer)) {
           span.addProperty("region", client.getRegion().toString());
+          span.addProperty(
+              "address",
+              client.getStore().getProxyStore() != null
+                  ? "proxy." + client.getStore().getProxyStore().getAddress()
+                  : client.getStore().getAddress());
           Optional<ByteString> result = client.rawGet(backOffer, key);
           RAW_REQUEST_SUCCESS.labels(labels).inc();
           return result;
